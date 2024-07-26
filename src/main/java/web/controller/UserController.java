@@ -18,6 +18,9 @@ public class UserController {
         this.userService = userService;
     }
 
+    public UserController() {
+    }
+
     @GetMapping()
     public String index(Model model, @RequestParam(value = "id", defaultValue = "0") int id) {
         if (id == 0) {
@@ -52,5 +55,11 @@ public class UserController {
     public String userupdate(@ModelAttribute("user") User user) {
         userService.updateUser(user);
         return "redirect:/users";
+    }
+
+    @GetMapping("/show")
+    public String show(Model model, @RequestParam("id") int id) {
+        model.addAttribute("user", userService.showUser(id));
+        return "users/show";
     }
 }
