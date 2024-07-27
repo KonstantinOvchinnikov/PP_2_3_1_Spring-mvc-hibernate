@@ -35,22 +35,25 @@ public class UserController {
     public String newUser(@ModelAttribute("user") User user) {
         return "users/new";
     }
+
     @PostMapping()
-    public String create(@ModelAttribute("user") User user){
+    public String create(@ModelAttribute("user") User user) {
         userService.saveUser(user);
         return "redirect:/users";
     }
+
     @GetMapping("/delete")
-    public String delete(@RequestParam(value = "id") int id){
+    public String delete(@RequestParam(value = "id") int id) {
         userService.deleteUser(id);
         return "redirect:/users";
     }
 
     @GetMapping("/update")
-    public String update(Model model, @RequestParam("id") int id){
+    public String update(Model model, @RequestParam("id") int id) {
         model.addAttribute("user", userService.showUser(id));
         return "users/update";
     }
+
     @PostMapping("/update")
     public String userupdate(@ModelAttribute("user") User user) {
         userService.updateUser(user);
