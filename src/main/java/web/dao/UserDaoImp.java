@@ -1,56 +1,58 @@
 package web.dao;
 
 
-import org.springframework.stereotype.Component;
+import org.hibernate.query.Query;
+import org.springframework.stereotype.Repository;
 import web.model.User;
 
-import java.util.ArrayList;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.List;
 
-@Component
+@Repository
 public class UserDaoImp implements UserDao {
-    private static int USER_ID ;
-    private List<User> users;
-    {
-        users = new ArrayList<>();
-        users.add(new User(++USER_ID,"name1", "surname1", 35, "email1"));
-        users.add(new User(++USER_ID,"name2", "surname2", 37, "email2"));
-        users.add(new User(++USER_ID, "name3", "surname3", 25, "email3"));
-        users.add(new User(++USER_ID,"name4", "surname4", 39, "email4"));
-    }
+
+    @PersistenceContext(unitName = "entityManagerFactoryBean")
+    private EntityManager entityManager;
 
     @Override
     public List<User> showAllUsers() {
-        return users;
+        return entityManager.createQuery("select u from User u", User.class).getResultList();
     }
 
     @Override
     public void saveUser(User user) {
-        if (user.getId() == 0) {
-            user.setId(++USER_ID);
-            users.add(user);
-        } else {
-            users.remove(users.get(user.getId()));
-            users.add(user);
-        }
+        entityManager.persist(user);
+        ;
     }
 
     @Override
     public void deleteUser(User user) {
-        users.remove(user);
+        String hql = "delete from User where id=:id";
+        entityManager.createQuery(hql).setParameter("id", user.getId()).executeUpdate();
     }
 
     @Override
     public void updateUser(User user) {
-        User userUpdate = showUser(user.getId());
-        userUpdate.setName(user.getName());
-        userUpdate.setSurname(user.getSurname());
-        userUpdate.setAge(user.getAge());
-        userUpdate.setEmail(user.getEmail());
+        String hql = "update User "
+                + "SET name = :name "
+                + ", surname = :surname "
+                + ", age = :age "
+                + ", email =: email"
+                + " where id = :id";
+        Query query = (Query) entityManager.createQuery(hql);
+        query.setParameter("name", user.getName());
+        query.setParameter("surname", user.getSurname());
+        query.setParameter("age", user.getAge());
+        query.setParameter("email", user.getEmail());
+        query.setParameter("id", user.getId());
+        query.executeUpdate();
     }
 
     @Override
     public User showUser(int id) {
-        return users.stream().filter(user -> user.getId() == id).findAny().orElseGet(null);
+        String hql = "select u from User u where id=:id";
+        return entityManager.createQuery(hql, User.class).setParameter("id", id).getSingleResult();
     }
 }
